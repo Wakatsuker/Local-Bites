@@ -1,0 +1,14 @@
+{
+  "name": "localbites",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LocalBites storefront and local Postman API",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/server.js",
+    "api": "node --env-file-if-exists=.env server/server.js",
+    "check": "node --check js/app.js && node --check server/server.js"
+  },
+  "engines": {
+    "node": ">=20.12"
+  }
+}
