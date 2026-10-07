@@ -1,0 +1,12 @@
+-- Enable Realtime events for the buyer product catalog.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'products'
+  ) then
+    alter publication supabase_realtime add table public.products;
+  end if;
+end $$;
