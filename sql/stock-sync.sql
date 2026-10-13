@@ -1,5 +1,7 @@
--- Run this in Supabase SQL Editor.
--- It deducts stock atomically only after a valid checkout.
+-- Legacy helper retained for reference.
+-- New checkout code uses place_order from production-requirements.sql.
+-- Direct execution is intentionally denied because this function does not
+-- prove that the deduction belongs to a valid order.
 create or replace function public.decrement_product_stock(p_product_id uuid, p_quantity numeric)
 returns boolean
 language plpgsql
@@ -21,4 +23,4 @@ end;
 $$;
 
 revoke all on function public.decrement_product_stock(uuid, numeric) from public;
-grant execute on function public.decrement_product_stock(uuid, numeric) to authenticated;
+revoke execute on function public.decrement_product_stock(uuid, numeric) from authenticated;

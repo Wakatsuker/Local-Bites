@@ -1,175 +1,189 @@
 {
   "info": {
     "_postman_id": "b8a65e98-c2c5-48bd-b381-1cca1b17e500",
-    "name": "LocalBites API",
-    "description": "Postman requests for the LocalBites Node API backed by Supabase.",
+    "name": "LocalBites API - Supabase CRUD Proof",
+    "description": "Run this collection from top to bottom. Login saves the Supabase access token automatically; Create Product saves the product ID for the remaining CRUD requests.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Health Check",
+      "name": "1 - Health Check",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('API server is healthy', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.expect(pm.response.json().database).to.eql('Supabase');",
+            "});"
+          ]
+        }
+      }],
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/health"
+        "url": "{{base_url}}/health"
       }
     },
     {
-      "name": "Authentication",
-      "item": [
-        {
-          "name": "Login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "  const response = pm.response.json();",
-                  "  pm.collectionVariables.set('access_token', response.access_token);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"your-seller@example.com\",\n  \"password\": \"your-password\"\n}"
-            },
-            "url": "{{base_url}}/api/auth/login"
-          }
+      "name": "2 - Seller Login",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Seller login succeeds', function () {",
+            "  pm.response.to.have.status(200);",
+            "  const body = pm.response.json();",
+            "  pm.expect(body.access_token).to.be.a('string').and.not.empty;",
+            "  pm.collectionVariables.set('access_token', body.access_token);",
+            "});"
+          ]
         }
-      ]
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{seller_email}}\",\n  \"password\": \"{{seller_password}}\"\n}"
+        },
+        "url": "{{base_url}}/auth/login"
+      }
     },
     {
-      "name": "Products",
-      "item": [
-        {
-          "name": "Get Products",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{base_url}}/api/products"
-          }
-        },
-        {
-          "name": "Get Product by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{base_url}}/api/products/{{product_id}}"
-          }
-        },
-        {
-          "name": "Create Product",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "  const response = pm.response.json();",
-                  "  pm.collectionVariables.set('product_id', response.data.id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Postman Test Tomatoes\",\n  \"description\": \"Created through the LocalBites API\",\n  \"category\": \"Vegetables\",\n  \"price\": 80,\n  \"unit\": \"kg\",\n  \"available_quantity\": 25,\n  \"image_url\": null\n}"
-            },
-            "url": "{{base_url}}/api/products"
-          }
-        },
-        {
-          "name": "Update Product",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"price\": 85,\n  \"available_quantity\": 20\n}"
-            },
-            "url": "{{base_url}}/api/products/{{product_id}}"
-          }
-        },
-        {
-          "name": "Delete Product",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": "{{base_url}}/api/products/{{product_id}}"
-          }
+      "name": "3 - Get Products",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Products are returned from Supabase', function () {",
+            "  pm.response.to.have.status(200);",
+            "  const body = pm.response.json();",
+            "  pm.expect(body.data).to.be.an('array');",
+            "  pm.expect(body.count).to.be.a('number');",
+            "});"
+          ]
         }
-      ]
+      }],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/products?limit=20"
+      }
+    },
+    {
+      "name": "4 - Create Product",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Product is created in Supabase', function () {",
+            "  pm.response.to.have.status(201);",
+            "  const body = pm.response.json();",
+            "  pm.expect(body.data.id).to.be.a('string').and.not.empty;",
+            "  pm.collectionVariables.set('product_id', body.data.id);",
+            "});"
+          ]
+        }
+      }],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Postman Test Tomatoes\",\n  \"description\": \"Created through the LocalBites API\",\n  \"category\": \"Vegetables\",\n  \"price\": 80,\n  \"unit\": \"kg\",\n  \"available_quantity\": 25,\n  \"image_url\": null\n}"
+        },
+        "url": "{{base_url}}/products"
+      }
+    },
+    {
+      "name": "5 - Get Created Product",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Created product can be read', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.expect(pm.response.json().data.id).to.eql(pm.collectionVariables.get('product_id'));",
+            "});"
+          ]
+        }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/products/{{product_id}}"
+      }
+    },
+    {
+      "name": "6 - Update Product",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Product is updated in Supabase', function () {",
+            "  pm.response.to.have.status(200);",
+            "  const product = pm.response.json().data;",
+            "  pm.expect(Number(product.price)).to.eql(85);",
+            "  pm.expect(Number(product.available_quantity)).to.eql(20);",
+            "});"
+          ]
+        }
+      }],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+        },
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 85,\n  \"available_quantity\": 20\n}"
+        },
+        "url": "{{base_url}}/products/{{product_id}}"
+      }
+    },
+    {
+      "name": "7 - Delete Product",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Product is deleted from Supabase', function () {",
+            "  pm.response.to.have.status(200);",
+            "  pm.expect(pm.response.json().data.id).to.eql(pm.collectionVariables.get('product_id'));",
+            "});"
+          ]
+        }
+      }],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base_url}}/products/{{product_id}}"
+      }
     }
   ],
   "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:3000"
-    },
-    {
-      "key": "access_token",
-      "value": ""
-    },
-    {
-      "key": "product_id",
-      "value": ""
-    }
+    { "key": "base_url", "value": "http://localhost:3000/api/v1" },
+    { "key": "seller_email", "value": "" },
+    { "key": "seller_password", "value": "", "type": "secret" },
+    { "key": "access_token", "value": "", "type": "secret" },
+    { "key": "product_id", "value": "" }
   ]
 }

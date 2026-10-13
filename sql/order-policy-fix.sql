@@ -49,9 +49,6 @@ for select
 to authenticated
 using (public.seller_can_access_order(id));
 
-create policy "sellers update orders containing their products"
-on public.orders
-for update
-to authenticated
-using (public.seller_can_access_order(id))
-with check (public.seller_can_access_order(id));
+-- Direct seller updates are intentionally not restored. Sellers must call
+-- update_order_status from production-requirements.sql so transitions,
+-- notifications, and cancellation restocking happen together.

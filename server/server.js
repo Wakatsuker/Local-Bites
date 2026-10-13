@@ -69,6 +69,11 @@ function productIdFromPath(pathname) {
   return match?.[1] || null;
 }
 
+function normalizeApiPath(pathname) {
+  if (pathname === "/api/v1") return "/api";
+  return pathname.replace(/^\/api\/v1(?=\/)/, "/api");
+}
+
 function productPath(parameters) {
   return `rest/v1/products?${parameters.toString()}`;
 }
@@ -147,24 +152,42 @@ async function getProduct(productId, response) {
   sendJson(response, 200, { data: products[0] });
 }
 
-async function findSellerFarm(userId, accessToken) {
+async function ensureSellerFarm(user, accessToken) {
   const parameters = new URLSearchParams({
     select: "id,farm_name",
-    seller_id: `eq.${userId}`,
+    seller_id: `eq.${user.id}`,
     limit: "1",
   });
   const farms = await supabaseRequest(`rest/v1/farms?${parameters}`, {
     accessToken,
   });
 
-  if (!farms.length) {
-    throw new ApiError(
-      409,
-      "This account has no farm. Open the Seller portal once to create it.",
-    );
-  }
+  if (farms.length) return farms[0];
 
-  return farms[0];
+  const profileParameters = new URLSearchParams({
+    select: "full_name",
+    id: `eq.${user.id}`,
+    limit: "1",
+  });
+  const profiles = await supabaseRequest(
+    `rest/v1/profiles?${profileParameters}`,
+    { accessToken },
+  );
+  const fallbackName = user.email?.split("@")[0] || "Seller";
+  const sellerName = profiles[0]?.full_name?.trim() || fallbackName;
+
+  const createdFarms = await supabaseRequest("rest/v1/farms", {
+    method: "POST",
+    accessToken,
+    headers: { Prefer: "return=representation" },
+    body: {
+      seller_id: user.id,
+      farm_name: `${sellerName}'s Farm`,
+      location: "Digos Valley",
+    },
+  });
+
+  return createdFarms[0];
 }
 
 async function createProduct(request, response) {
@@ -173,7 +196,7 @@ async function createProduct(request, response) {
 
   if (validation.error) throw new ApiError(400, validation.error);
 
-  const farm = await findSellerFarm(user.id, accessToken);
+  const farm = await ensureSellerFarm(user, accessToken);
   const products = await supabaseRequest("rest/v1/products", {
     method: "POST",
     accessToken,
@@ -243,9 +266,10 @@ async function handleRequest(request, response) {
   }
 
   const url = new URL(request.url, `http://${request.headers.host}`);
-  const productId = productIdFromPath(url.pathname);
+  const pathname = normalizeApiPath(url.pathname);
+  const productId = productIdFromPath(pathname);
 
-  if (request.method === "GET" && url.pathname === "/api/health") {
+  if (request.method === "GET" && pathname === "/api/health") {
     sendJson(response, 200, {
       status: "ok",
       service: "LocalBites API",
@@ -255,17 +279,17 @@ async function handleRequest(request, response) {
     return;
   }
 
-  if (request.method === "POST" && url.pathname === "/api/auth/login") {
+  if (request.method === "POST" && pathname === "/api/auth/login") {
     await login(request, response);
     return;
   }
 
-  if (request.method === "GET" && url.pathname === "/api/products") {
+  if (request.method === "GET" && pathname === "/api/products") {
     await listProducts(url, response);
     return;
   }
 
-  if (request.method === "POST" && url.pathname === "/api/products") {
+  if (request.method === "POST" && pathname === "/api/products") {
     await createProduct(request, response);
     return;
   }

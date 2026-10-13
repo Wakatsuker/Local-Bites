@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env server/server.js",
     "api": "node --env-file-if-exists=.env server/server.js",
-    "check": "node --check js/app.js && node --check server/server.js"
+    "check": "node --check js/app.js && node --check sw.js && node --check server/server.js && node --check server/validation.js"
   },
   "engines": {
     "node": ">=20.12"

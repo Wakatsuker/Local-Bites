@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LocalBites — Seller dashboard</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body data-page="seller">
+    <section id="seller-app" class="seller-app">
+      <header class="seller-top">
+        <button class="back-role" type="button" aria-label="Log out and return to portal choice">&larr;</button>
+        <a class="brand" href="seller.html">
+          <span class="brand-mark">L</span>
+          <span><strong>LocalBites</strong><small>FARMER CO-OP</small></span>
+        </a>
+        <div><strong>Local Bites</strong><small>Farmer Portal</small></div>
+      </header>
+      <main class="seller-main">
+        <div class="eyebrow">&#9679; Farm Dashboard</div>
+        <h1>Good morning!</h1>
+        <p class="lede">Let's share your harvest today.</p>
+        <button class="add-product" type="button">+ &nbsp; Add Product</button>
+        <div class="seller-links">
+          <button type="button"><span>&#9635;</span><strong>My Products</strong><b>&rsaquo;</b></button>
+          <button type="button"><span>&#9636;</span><strong>Incoming Orders</strong><b>&rsaquo;</b></button>
+          <button type="button"><span>&#9632;</span><strong>Deliveries</strong><b>&rsaquo;</b></button>
+          <button type="button"><span>&#128276;</span><strong>Notifications</strong><b>&rsaquo;</b></button>
+        </div>
+        <div class="seller-promo">
+          <small>LOCAL COOPERATIVE</small>
+          <h2>Fresh Harvest,<br />Brighter<br />Tomorrows</h2>
+          <p>Direct from your soil to local tables across the city.</p>
+          <span aria-hidden="true">&#127793;</span>
+        </div>
+        <div class="seller-stats">
+          <div>Dispatched Today<strong id="seller-dispatched-stat">0</strong></div>
+          <div>Delivered Earnings<strong id="seller-earnings-stat">PHP 0</strong></div>
+        </div>
+      </main>
+    </section>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

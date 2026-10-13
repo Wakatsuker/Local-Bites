@@ -1,5 +1,7 @@
 -- LocalBites Supabase schema
 -- Run this file in Supabase Dashboard > SQL Editor.
+-- Then run production-requirements.sql for transactional checkout,
+-- delivery tracking, notifications, and final production policies.
 
 create extension if not exists "uuid-ossp";
 
